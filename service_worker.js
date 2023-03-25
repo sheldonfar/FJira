@@ -36,7 +36,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
   if (request.action === 'loadState') {
-    console.info('LOAD STATE');
     loadState(sendResponse);
     return true;
   }
