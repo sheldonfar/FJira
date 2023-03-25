@@ -1,10 +1,11 @@
+function injectCode(src) {
+  const script = document.createElement('script');
+  script.src = src;
+  document.head.appendChild(script);
+}
+
 function triggerResize() {
-  var script = 'window.GH.Layout.fireDelayedWindowResize();';
-  
-  var scriptElement = document.createElement('script');
-  scriptElement.innerHTML = script;
-  
-  document.head.appendChild(scriptElement);
+  injectCode(chrome.runtime.getURL('/resize.js'));
 }
 
 function toggleHeaderRemoval(value) {

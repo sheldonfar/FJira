@@ -20,8 +20,8 @@ function loadState(callback) {
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    if (changeInfo.status == 'complete' && tabId === tabs[0].id) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs = []) => {
+    if (changeInfo.status == 'complete' && tabs[0] && tabId === tabs[0].id) {
       loadState(state => {
         sendMessage('toggleHeaderRemoval', state.removeHeader);
         sendMessage('toggleBreadcrumbsRemoval', state.removeBreadcrumbs);
@@ -32,4 +32,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       });
     }
   });
+});
+
+chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
+  if (request.action === 'loadState') {
+    console.info('LOAD STATE');
+    loadState(sendResponse);
+    return true;
+  }
 });

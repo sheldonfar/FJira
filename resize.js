@@ -1,0 +1,1 @@
+window.GH.Layout.fireDelayedWindowResize();

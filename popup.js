@@ -29,11 +29,7 @@ function setState(state) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const backgroundPage = chrome.extension.getBackgroundPage();
-
-  if (backgroundPage) {
-    backgroundPage.loadState(setState);
-  }
+  chrome.runtime.sendMessage({ action: 'loadState' }, setState);
   
   headerRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeHeader', 'toggleHeaderRemoval'));
   breadcrumbsRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeBreadcrumbs', 'toggleBreadcrumbsRemoval'));

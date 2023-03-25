@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "FJira",
   "version": "1.0",
   "description": "A Chrome extension to improve the UX of Jira web app",
@@ -15,14 +15,15 @@
     }
   ],
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "service_worker.js",
+    "type": "module"
   },
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "icon-16.png",
       "48": "icon-48.png",
@@ -32,6 +33,9 @@
     "default_popup": "popup.html"
   },
   "web_accessible_resources": [
-    "popup.js"
+    {
+      "resources": ["resize.js"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }
