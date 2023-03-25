@@ -1,5 +1,9 @@
 body {
-    width: 200px;
-    height: 100px;
+    width: 300px;
     padding-bottom: 20px;
+}
+
+.setting {
+    display: flex;
+    align-items: center;
 }

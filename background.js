@@ -2,7 +2,9 @@ const storageKeys = [
   'removeHeader', 
   'removeBreadcrumbs',
   'removeSprintHeader', 
-  'removeFilters'
+  'removeFilters',
+  'removeSwimlaneHeaders',
+  'columnHeaderPadding',
 ];
 
 function sendMessage(message, value) {
@@ -14,11 +16,7 @@ function sendMessage(message, value) {
 }
 
 function loadState(callback) {
-  chrome.storage.sync.get(storageKeys, result => {
-    if (callback) {
-      callback(result);
-    }
-  });
+  chrome.storage.sync.get(storageKeys, callback);
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
@@ -29,6 +27,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         sendMessage('toggleBreadcrumbsRemoval', state.removeBreadcrumbs);
         sendMessage('toggleSprintHeaderRemoval', state.removeSprintHeader);
         sendMessage('toggleFiltersRemoval', state.removeFilters);
+        sendMessage('toggleSwimlaneHeadersRemoval', state.removeSwimlaneHeaders);
+        sendMessage('setColumnHeaderPadding', state.columnHeaderPadding);
       });
     }
   });
