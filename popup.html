@@ -7,30 +7,43 @@
   </head>
   <body>
     <h2>FJira</h2>
-    <div class="setting">
-      <input type="checkbox" id="header-removal-switch">
-      Remove header
+    <hr/>
+    <div>
+      <h3>Settings</h3>
+      <div class="setting">
+        <input type="checkbox" id="header-removal-switch">
+        Remove header
+      </div>
+      <div class="setting">
+          <input type="checkbox" id="breadcrumbs-removal-switch">
+          Remove breadcrumbs
+      </div>
+      <div class="setting">
+          <input type="checkbox" id="sprint-header-removal-switch">
+          Remove sprint header
+      </div>
+      <div class="setting">
+          <input type="checkbox" id="filters-removal-switch">
+          Remove filters
+      </div>
+      <div class="setting">
+        <input type="checkbox" id="swimlane-headers-removal-switch">
+        Remove swimlane headers
+      </div>
+      <div class="setting">
+        <input type="range" min="1" max="17" value="17" id="column-header-padding-range">
+        Column header padding
+      </div>
     </div>
-    <div class="setting">
-        <input type="checkbox" id="breadcrumbs-removal-switch">
-        Remove breadcrumbs
+    <hr/>
+    <div>
+      <h3>Remove specific column(s)</h3>
+      <ul id="columns-removal-container"></ul>
+      <div class="setting">
+        <input id="remove-column-input" type="text">
+        <a id="remove-column-button" href="#">Add</a>
+      </div>
     </div>
-    <div class="setting">
-        <input type="checkbox" id="sprint-header-removal-switch">
-        Remove sprint header
-    </div>
-    <div class="setting">
-        <input type="checkbox" id="filters-removal-switch">
-        Remove filters
-    </div>
-    <div class="setting">
-      <input type="checkbox" id="swimlane-headers-removal-switch">
-      Remove swimlane headers
-    </div>
-    <div class="setting">
-      <input type="range" min="1" max="17" value="17" id="column-header-padding-range">
-      Column header padding
-  </div>
   </body>
 
   <script src="./popup.js"></script>

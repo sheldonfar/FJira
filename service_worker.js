@@ -5,6 +5,7 @@ const storageKeys = [
   'removeFilters',
   'removeSwimlaneHeaders',
   'columnHeaderPadding',
+  'removeColumns',
 ];
 
 function sendMessage(message, value) {
@@ -29,6 +30,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         sendMessage('toggleFiltersRemoval', state.removeFilters);
         sendMessage('toggleSwimlaneHeadersRemoval', state.removeSwimlaneHeaders);
         sendMessage('setColumnHeaderPadding', state.columnHeaderPadding);
+        sendMessage('toggleColumnsRemoval', state.removeColumns);
       });
     }
   });

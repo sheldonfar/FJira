@@ -12,6 +12,8 @@ function toggleHeaderRemoval(value) {
   const html = document.querySelector('html');
   const header = document.querySelector('header[role="banner"]');
 
+  if (!html || !header) return;
+  
   if (value) {
     header.style.display = 'none';
     html.style.setProperty('--topNavigationHeight', '0px');
@@ -26,6 +28,8 @@ function toggleHeaderRemoval(value) {
 function toggleBreadcrumbsRemoval(value) {
   const breadcrumbs = document.querySelector('div[data-testid="rapidboard-breadcrumbs"]');
 
+  if (!breadcrumbs) return;
+  
   if (value) {
     breadcrumbs.style.height = 0;
     breadcrumbs.style.overflow = 'hidden';
@@ -38,6 +42,8 @@ function toggleBreadcrumbsRemoval(value) {
 function toggleSprintHeaderRemoval(value) {
   const sprintHeader = document.querySelector('#ghx-header');
 
+  if (!sprintHeader) return;
+
   if (value) {
     sprintHeader.style.display = 'none';
   } else {
@@ -47,6 +53,8 @@ function toggleSprintHeaderRemoval(value) {
 
 function toggleFiltersRemoval(value) {
   const filters = document.querySelector('#ghx-operations');
+
+  if (!filters) return;
 
   if (value) {
     filters.style.display = 'none';
@@ -82,6 +90,29 @@ function setColumnHeaderPadding(value) {
   triggerResize();
 }
 
+function toggleColumnsRemoval(data) {
+  Object.keys(data || {}).forEach(key => {
+    const columns = document.querySelectorAll(`.ghx-column[title="${key}" i]`);
+    const column = columns && columns[0];
+  
+    if (!column) return;
+  
+    const columnId = column.getAttribute('data-id'); 
+    const mainColumns = document.querySelectorAll(`.ghx-column[data-column-id="${columnId}"]`);
+    const mainColumn = mainColumns && mainColumns[0];
+
+    if (!mainColumn) return;
+    
+    if (data[key]) {
+      column.style.display = 'none';
+      mainColumn.style.display = 'none';
+    } else {
+      column.style.display = 'block';
+      mainColumn.style.display = 'block';
+    }
+  });
+}
+
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'toggleHeaderRemoval') {
@@ -101,5 +132,8 @@ chrome.runtime.onMessage.addListener(request => {
   }
   if (request.action === 'setColumnHeaderPadding') {
     setColumnHeaderPadding(request.value);
+  }
+  if (request.action === 'toggleColumnsRemoval') {
+    toggleColumnsRemoval(request.value);
   }
 });

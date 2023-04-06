@@ -4,6 +4,26 @@ body {
 }
 
 .setting {
+    width: 100%;
     display: flex;
     align-items: center;
+}
+
+input[type="text"],
+input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 16px;
+}
+
+ul li > a {
+    display: none;
+    margin-left: 8px;
+}
+
+ul li:hover > a {
+    display: initial;
 }
