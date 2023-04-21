@@ -3,7 +3,7 @@
     "eslint": "^8.36.0"
   },
   "name": "fjira",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Chrome extension to improve the UX of Jira web app",
   "main": "main.js",
   "scripts": {
