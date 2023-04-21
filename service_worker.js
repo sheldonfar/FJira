@@ -36,6 +36,38 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   });
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'fJiraRoot',
+    title: 'FJira',
+    contexts: ['page', 'selection']
+  });
+
+  chrome.contextMenus.create({
+    parentId: 'fJiraRoot',
+    id: 'exportTicketsSlack',
+    title: 'Export tickets in this column (Slack)',
+    contexts: ['page', 'selection']
+  });
+
+  chrome.contextMenus.create({
+    parentId: 'fJiraRoot',
+    id: 'exportTicketsPlain',
+    title: 'Export tickets in this column (Plain)',
+    contexts: ['page', 'selection']
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((clickData, tab) => {
+  if (clickData.menuItemId == 'exportTicketsSlack') {
+    chrome.tabs.sendMessage(tab.id, { action: 'exportTicketsSlack' }, { frameId: clickData.frameId });
+  }
+
+  if (clickData.menuItemId == 'exportTicketsPlain') {
+    chrome.tabs.sendMessage(tab.id, { action: 'exportTicketsPlain' }, { frameId: clickData.frameId });
+  }
+});
+
 chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
   if (request.action === 'loadState') {
     loadState(sendResponse);

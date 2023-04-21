@@ -1,3 +1,5 @@
+let clickedEl = null;
+
 function injectCode(src) {
   const script = document.createElement('script');
   script.src = src;
@@ -113,6 +115,62 @@ function toggleColumnsRemoval(data) {
   });
 }
 
+function exportTickets(formatFor) {
+  const columnName = clickedEl.innerText;
+  const column = document.querySelector(`.ghx-column[title="${columnName}" i]`);
+
+  if (!column) return;
+
+  const columnId = column.getAttribute('data-id'); 
+  const mainColumn = document.querySelector(`.ghx-column[data-column-id="${columnId}"]`);
+
+  if (!mainColumn) return;
+
+  const issues = mainColumn.querySelectorAll('.ghx-issue');
+
+  if (!issues?.length) return;
+
+  const issuesList = [...issues];
+
+  let listHeader = `--${columnName}--\n\n`;
+
+  if (formatFor === 'slack') {
+    listHeader = `*${columnName}*\n\n`;
+  }
+  
+  return issuesList.reduce((acc, issue, index) => {
+    const summary = issue.querySelector('.ghx-summary');
+
+    if (!summary) return acc;
+
+    const estimate = issue.querySelector('.ghx-estimate');
+    const estimateValue = estimate?.innerText || '?';
+    const ticketId = issue.getAttribute('data-issue-key');
+    const link = `${document.location.origin}/browse/${ticketId}`;
+
+    let issueString = `[${ticketId}] ${summary.innerText} (${estimateValue})`;
+
+    if (formatFor === 'slack') {
+      issueString = `* [[${ticketId}](${link})] ${summary.innerText} (_${estimateValue}_)`;
+    }
+
+    return acc + issueString + (index === issuesList.length - 1 ? '' : '\n');
+  }, listHeader);
+}
+
+function copyTextToClipboard(text) {
+  var copyFrom = document.createElement('textarea');
+
+  copyFrom.textContent = text;
+  document.body.appendChild(copyFrom);
+  copyFrom.select();
+  document.execCommand('copy');
+  copyFrom.blur();
+  document.body.removeChild(copyFrom);
+}
+
+document.addEventListener('contextmenu', event => (clickedEl = event.target), true);
+
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'toggleHeaderRemoval') {
@@ -135,5 +193,12 @@ chrome.runtime.onMessage.addListener(request => {
   }
   if (request.action === 'toggleColumnsRemoval') {
     toggleColumnsRemoval(request.value);
+  }
+  if (request.action === 'exportTicketsSlack') {
+    copyTextToClipboard(exportTickets('slack'));
+  }
+
+  if (request.action === 'exportTicketsPlain') {
+    copyTextToClipboard(exportTickets('plain'));
   }
 });

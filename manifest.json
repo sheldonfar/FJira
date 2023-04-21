@@ -19,7 +19,8 @@
     "type": "module"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "contextMenus"
   ],
   "action": {
     "default_icon": {
