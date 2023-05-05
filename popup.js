@@ -27,7 +27,7 @@ function toggleSwitch(value, key, message) {
 function fillRemoveColumnList() {
   columnsRemovalContainer.innerHTML = '';
   
-  Object.keys(rootState.removeColumns).forEach(column => {
+  Object.keys(rootState.removeColumns || {}).forEach(column => {
     const li = document.createElement('li');
 
     const checkbox = document.createElement('input');
