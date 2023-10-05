@@ -176,46 +176,53 @@ function toggleColumnsRemoval(data) {
 }
 
 function exportTickets(formatFor) {
-  const columnName = clickedEl.innerText;
-  const column = document.querySelector(`.ghx-column[title="${columnName}" i]`);
+  const columnName = clickedEl.innerText.replace(/[0-9]/g, '').trim();
+
+  const columnHeaderContainers = document.querySelectorAll('[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
+  const columnHeaderContainersList = [...columnHeaderContainers];
+  const columnHeaderContainer = columnHeaderContainersList.find(el => el.textContent.toLowerCase().includes(columnName.toLowerCase()));
+  const column = columnHeaderContainer?.parentElement?.parentElement?.parentElement;
 
   if (!column) return;
 
-  const columnId = column.getAttribute('data-id'); 
-  const mainColumn = document.querySelector(`.ghx-column[data-column-id="${columnId}"]`);
+  const index = columnHeaderContainersList.indexOf(columnHeaderContainer);
+  const mainColumns = document.querySelectorAll(`div[data-test-id="platform-board-kit.ui.column.draggable-column.styled-wrapper"]:nth-of-type(${index + 1})`);
 
-  if (!mainColumn) return;
-
-  const issues = mainColumn.querySelectorAll('.ghx-issue');
-
-  if (!issues?.length) return;
-
-  const issuesList = [...issues];
-
-  let listHeader = `--${columnName}--\n\n`;
+  let list = `--${columnName}--\n\n`;
 
   if (formatFor === 'slack') {
-    listHeader = `*${columnName}*\n\n`;
+    list = `*${columnName}*\n\n`;
   }
+
+  [...mainColumns].forEach(mainColumn => {
+    const issues = mainColumn.querySelectorAll('[data-test-id="platform-board-kit.ui.card.card"]');
+    const issuesList = [...issues];
+    
+    issuesList.forEach((issue, index) => {
+      const summary = issue.querySelector('[class*="summary"]');
   
-  return issuesList.reduce((acc, issue, index) => {
-    const summary = issue.querySelector('.ghx-summary');
+      if (!summary) return;
+  
+      const estimate = issue.querySelector('[data-testid="platform-card.common.ui.estimate.badge"]');
+      const estimateValue = estimate?.innerText || '?';
 
-    if (!summary) return acc;
+      const ticketLink = issue.querySelector('[href*="browse/"]');
+      const ticketHref = `${document.location.origin}${ticketLink.getAttribute('href')}`;
 
-    const estimate = issue.querySelector('.ghx-estimate');
-    const estimateValue = estimate?.innerText || '?';
-    const ticketId = issue.getAttribute('data-issue-key');
-    const link = `${document.location.origin}/browse/${ticketId}`;
-
-    let issueString = `[${ticketId}] ${summary.innerText} (${estimateValue})`;
-
-    if (formatFor === 'slack') {
-      issueString = `* [[${ticketId}](${link})] ${summary.innerText} (_${estimateValue}_)`;
-    }
-
-    return acc + issueString + (index === issuesList.length - 1 ? '' : '\n');
-  }, listHeader);
+      const split = ticketHref.split('/');
+      const ticketId = split[split.length - 1];
+  
+      let issueString = `[${ticketId}] ${summary.innerText} (${estimateValue})`;
+  
+      if (formatFor === 'slack') {
+        issueString = `* [[${ticketId}](${ticketHref})] ${summary.innerText} (_${estimateValue}_)`;
+      }
+  
+      return list += issueString + (index === issuesList.length - 1 ? '' : '\n');
+    });
+  });
+  
+  return list;
 }
 
 function copyTextToClipboard(text) {
