@@ -28,21 +28,21 @@ function toggleHeaderRemoval(value) {
 }
 
 function toggleBreadcrumbsRemoval(value) {
-  const breadcrumbs = document.querySelector('div[data-testid="rapidboard-breadcrumbs"]');
-
+  const breadcrumbsContainer = document.querySelector('nav[aria-label="Breadcrumbs"]');
+  const breadcrumbs = breadcrumbsContainer?.parentElement;
+  
   if (!breadcrumbs) return;
   
   if (value) {
-    breadcrumbs.style.height = 0;
-    breadcrumbs.style.overflow = 'hidden';
+    breadcrumbs.style.display = 'none';
   } else {
-    breadcrumbs.style.height = null;
-    breadcrumbs.style.overflow = null;
+    breadcrumbs.style.display = 'block';
   }
 }
 
 function toggleSprintHeaderRemoval(value) {
-  const sprintHeader = document.querySelector('#ghx-header');
+  const headerTitleContainer = document.querySelector('div[data-testid="software-board.header.title.container"]');
+  const sprintHeader = headerTitleContainer?.parentElement?.parentElement;
 
   if (!sprintHeader) return;
 
@@ -54,63 +54,123 @@ function toggleSprintHeaderRemoval(value) {
 }
 
 function toggleFiltersRemoval(value) {
-  const filters = document.querySelector('#ghx-operations');
+  const controlsBar = document.querySelector('div[data-testid="software-board.header.controls-bar"]');
+  const filters = controlsBar?.parentElement?.parentElement;
+  const filtersParent = filters?.parentElement;
 
   if (!filters) return;
 
   if (value) {
     filters.style.display = 'none';
+    if (filtersParent) {
+      filtersParent.style.margin = '0';
+    }
   } else {
     filters.style.display = 'flex';
+    if (filtersParent) {
+      filtersParent.style.margin = null;
+    }
   }
 }
 
 function toggleSwimlaneHeadersRemoval(value) {
-  const swimlaneHeaders = document.querySelectorAll('.ghx-swimlane-header');
+  const columnHeaderContainer = document.querySelector('div[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
+  const swimlaneContents = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-content"]');
+  const swimlaneWrappers = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-wrapper"]');
 
-  [...swimlaneHeaders].forEach(header => {
-    if (value) {
-      header.style.display = 'none';
-    } else {
-      header.style.display = 'block';
+  const swimlaneHeader = columnHeaderContainer?.parentElement?.parentElement?.parentElement?.parentElement;
+
+  if (!swimlaneHeader) return;
+
+  const neighbor = swimlaneHeader.nextSibling;
+  const placeholder = neighbor?.firstChild;
+
+  [...swimlaneContents].forEach(swimlaneContent => {
+    swimlaneContent.parentElement.style.top = value ? '0' : null;
+  });
+  
+  [...swimlaneWrappers].forEach(swimlaneWrapper => {
+    swimlaneWrapper.firstChild.style.top = value ? '40px' : null;
+  });
+
+  if (value) {
+    swimlaneHeader.style.display = 'none';
+    
+    if (placeholder) {
+      placeholder.style.display = 'none';
     }
-  });  
+  } else {
+    swimlaneHeader.style.display = 'grid';
+
+    if (placeholder) {
+      placeholder.style.display = 'block';
+    }
+  }
+}
+
+function toggleUnassignedRowRemoval(value) {
+  const swimlaneWrapper = [...document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-wrapper"]')]
+    .find(el => el.textContent.includes('Unassigned'));
+
+  if (!swimlaneWrapper) return;
+
+  if (value) {
+    swimlaneWrapper.style.display = 'none';
+  } else {
+    swimlaneWrapper.style.display = 'block';
+  }
 }
 
 function setColumnHeaderPadding(value) {
-  const columns = document.querySelectorAll('#ghx-column-headers > .ghx-column');
-  const swimlaneHeaders = document.querySelectorAll('.ghx-swimlane-header');
+  const columnHeaderContainers = document.querySelectorAll('div[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
+  const swimlaneContents = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-content"]');
+  const swimlaneWrappers = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-wrapper"]');
 
-  [...columns].forEach(column => {
-    column.style.padding = `${value}px`;
+  [...columnHeaderContainers].forEach(columnHeaderContainer => {
+    columnHeaderContainer.parentElement.style.height = `${value}px`;
   });
 
-  [...swimlaneHeaders].forEach(header => {
-    header.style.top = `${value * 2 + 12}px`;
+  [...swimlaneContents].forEach(swimlaneContent => {
+    swimlaneContent.parentElement.style.top = `${value}px`;
+  });
+  
+  [...swimlaneWrappers].forEach(swimlaneWrapper => {
+    swimlaneWrapper.firstChild.style.top = `${value}px`;
   });
 
+  if (swimlaneWrappers[0]) {
+    swimlaneWrappers[0].parentElement.firstChild.style.height = `${value}px`;
+    swimlaneWrappers[0].parentElement.firstChild.style.marginTop = `-${value}px`;
+  }
+ 
   triggerResize();
 }
 
 function toggleColumnsRemoval(data) {
   Object.keys(data || {}).forEach(key => {
-    const columns = document.querySelectorAll(`.ghx-column[title="${key}" i]`);
-    const column = columns && columns[0];
+    const columnHeaderContainers = document.querySelectorAll('div[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
+    const columnHeaderContainersList = [...columnHeaderContainers];
+    const columnHeaderContainer = columnHeaderContainersList.find(el => el.textContent.toLowerCase().includes(key.toLowerCase()));
+
+    const column = columnHeaderContainer?.parentElement?.parentElement?.parentElement;
   
     if (!column) return;
   
-    const columnId = column.getAttribute('data-id'); 
-    const mainColumns = document.querySelectorAll(`.ghx-column[data-column-id="${columnId}"]`);
-    const mainColumn = mainColumns && mainColumns[0];
+    const index = columnHeaderContainersList.indexOf(columnHeaderContainer);
+    const mainColumns = document.querySelectorAll(`div[data-test-id="platform-board-kit.ui.column.draggable-column.styled-wrapper"]:nth-of-type(${index + 1})`);
 
-    if (!mainColumn) return;
-    
+    [...mainColumns].forEach(mainColumn => {
+      if (data[key]) {
+        mainColumn.style.display = 'none';
+      } else {
+        mainColumn.style.display = 'flex';
+      }
+    });
+
     if (data[key]) {
       column.style.display = 'none';
-      mainColumn.style.display = 'none';
     } else {
-      column.style.display = 'block';
-      mainColumn.style.display = 'block';
+      column.style.display = 'flex';
     }
   });
 }
@@ -176,29 +236,31 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.action === 'toggleHeaderRemoval') {
     toggleHeaderRemoval(request.value);
   }
-  if (request.action === 'toggleBreadcrumbsRemoval') {
+  else if (request.action === 'toggleBreadcrumbsRemoval') {
     toggleBreadcrumbsRemoval(request.value);
   }
-  if (request.action === 'toggleSprintHeaderRemoval') {
+  else if (request.action === 'toggleSprintHeaderRemoval') {
     toggleSprintHeaderRemoval(request.value);
   }
-  if (request.action === 'toggleFiltersRemoval') {
+  else if (request.action === 'toggleFiltersRemoval') {
     toggleFiltersRemoval(request.value);
   }
-  if (request.action === 'toggleSwimlaneHeadersRemoval') {
+  else if (request.action === 'toggleSwimlaneHeadersRemoval') {
     toggleSwimlaneHeadersRemoval(request.value);
   }
-  if (request.action === 'setColumnHeaderPadding') {
+  else if (request.action === 'toggleUnassignedRowRemoval') {
+    toggleUnassignedRowRemoval(request.value);
+  }
+  else if (request.action === 'setColumnHeaderPadding') {
     setColumnHeaderPadding(request.value);
   }
-  if (request.action === 'toggleColumnsRemoval') {
+  else if (request.action === 'toggleColumnsRemoval') {
     toggleColumnsRemoval(request.value);
   }
-  if (request.action === 'exportTicketsSlack') {
+  else if (request.action === 'exportTicketsSlack') {
     copyTextToClipboard(exportTickets('slack'));
   }
-
-  if (request.action === 'exportTicketsPlain') {
+  else if (request.action === 'exportTicketsPlain') {
     copyTextToClipboard(exportTickets('plain'));
   }
 });

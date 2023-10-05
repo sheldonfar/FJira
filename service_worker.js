@@ -4,6 +4,7 @@ const storageKeys = [
   'removeSprintHeader', 
   'removeFilters',
   'removeSwimlaneHeaders',
+  'removeUnassignedRow',
   'columnHeaderPadding',
   'removeColumns',
 ];
@@ -16,22 +17,30 @@ function sendMessage(message, value) {
   });
 }
 
+function propagateState(state) {
+  sendMessage('toggleHeaderRemoval', state.removeHeader);
+  sendMessage('toggleBreadcrumbsRemoval', state.removeBreadcrumbs);
+  sendMessage('toggleSprintHeaderRemoval', state.removeSprintHeader);
+  sendMessage('toggleFiltersRemoval', state.removeFilters);
+  sendMessage('setColumnHeaderPadding', state.columnHeaderPadding);
+  sendMessage('toggleSwimlaneHeadersRemoval', state.removeSwimlaneHeaders);
+  sendMessage('toggleUnassignedRowRemoval', state.removeUnassignedRow);
+  sendMessage('toggleColumnsRemoval', state.removeColumns);
+}
+
 function loadState(callback) {
   chrome.storage.sync.get(storageKeys, callback);
+}
+
+function resetState(callback) {
+  propagateState({});
+  chrome.storage.sync.clear(callback);
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs = []) => {
     if (changeInfo.status == 'complete' && tabs[0] && tabId === tabs[0].id) {
-      loadState(state => {
-        sendMessage('toggleHeaderRemoval', state.removeHeader);
-        sendMessage('toggleBreadcrumbsRemoval', state.removeBreadcrumbs);
-        sendMessage('toggleSprintHeaderRemoval', state.removeSprintHeader);
-        sendMessage('toggleFiltersRemoval', state.removeFilters);
-        sendMessage('toggleSwimlaneHeadersRemoval', state.removeSwimlaneHeaders);
-        sendMessage('setColumnHeaderPadding', state.columnHeaderPadding);
-        sendMessage('toggleColumnsRemoval', state.removeColumns);
-      });
+      loadState(propagateState);
     }
   });
 });
@@ -71,6 +80,10 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
 chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
   if (request.action === 'loadState') {
     loadState(sendResponse);
+    return true;
+  }
+  else if (request.action === 'resetState') {
+    resetState(sendResponse);
     return true;
   }
 });

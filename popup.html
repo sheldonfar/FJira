@@ -6,10 +6,16 @@
     <link rel="stylesheet" type="text/css" href="popup.css">
   </head>
   <body>
-    <h2>FJira</h2>
+    <div class="title">
+      <h2>FJira</h2>
+      <h5>v1.3.0</h5>
+    </div>
     <hr/>
     <div>
-      <h3>Settings</h3>
+      <div class="title">
+        <h3>Settings</h3>
+        <a id="reset-button" href="#">Reset</a>
+      </div>
       <div class="setting">
         <input type="checkbox" id="header-removal-switch">
         Remove header
@@ -31,7 +37,11 @@
         Remove swimlane headers
       </div>
       <div class="setting">
-        <input type="range" min="1" max="17" value="17" id="column-header-padding-range">
+        <input type="checkbox" id="unassigned-row-removal-switch">
+        Remove unassigned row
+      </div>
+      <div class="setting">
+        <input type="range" min="20" max="48" value="48" id="column-header-padding-range">
         Column header padding
       </div>
     </div>

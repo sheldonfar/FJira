@@ -3,6 +3,20 @@ body {
     padding-bottom: 20px;
 }
 
+.title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title > a {
+    display: none;
+}
+
+.title:hover > a {
+    display: initial;
+}
+
 .setting {
     width: 100%;
     display: flex;

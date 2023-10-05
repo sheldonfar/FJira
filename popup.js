@@ -3,10 +3,12 @@ const breadcrumbsRemovalSwitch = document.getElementById('breadcrumbs-removal-sw
 const sprintHeaderRemovalSwitch = document.getElementById('sprint-header-removal-switch');
 const filtersRemovalSwitch = document.getElementById('filters-removal-switch');
 const swimlaneHeadersRemovalSwitch = document.getElementById('swimlane-headers-removal-switch');
+const unassignedRowRemovalSwitch = document.getElementById('unassigned-row-removal-switch');
 const columnHeaderPaddingRange = document.getElementById('column-header-padding-range');
 const columnsRemovalContainer = document.getElementById('columns-removal-container');
 const removeColumnInput = document.getElementById('remove-column-input');
 const removeColumnButton = document.getElementById('remove-column-button');
+const resetButton = document.getElementById('reset-button');
 
 let rootState; 
 
@@ -63,19 +65,44 @@ function fillRemoveColumnList() {
   });
 }
 
-function setState(state) {
+function setPaddingRangeState(disabled) {
+  if (disabled) {
+    columnHeaderPaddingRange.setAttribute('disabled', 'disabled');
+  } else {
+    columnHeaderPaddingRange.removeAttribute('disabled');
+  }
+}
+
+function setState(_state) {
+  const state = _state || {};
   rootState = state;
   headerRemovalSwitch.checked = state.removeHeader;
   breadcrumbsRemovalSwitch.checked = state.removeBreadcrumbs;
   sprintHeaderRemovalSwitch.checked = state.removeSprintHeader;
   filtersRemovalSwitch.checked = state.removeFilters;
   swimlaneHeadersRemovalSwitch.checked = state.removeSwimlaneHeaders;
-  columnHeaderPaddingRange.value = state.columnHeaderPadding;
+  unassignedRowRemovalSwitch.checked = state.removeUnassignedRow;
+  columnHeaderPaddingRange.value = state.columnHeaderPadding || columnHeaderPaddingRange.defaultValue;
+  setPaddingRangeState(state.removeSwimlaneHeaders);
   fillRemoveColumnList();
 }
 
 function humanizeString(str) {
   return str.toLowerCase().replace(/\b(\w)/g, match => match.toUpperCase());
+}
+
+function resetSettings() {
+  chrome.runtime.sendMessage({ action: 'resetState' }, setState);
+}
+
+function removeColumn() {
+  rootState.removeColumns = {
+    ...rootState.removeColumns,
+    [humanizeString(removeColumnInput.value)]: true,
+  };
+  toggleSwitch(rootState.removeColumns, 'removeColumns', 'toggleColumnsRemoval');
+  removeColumnInput.value = '';
+  fillRemoveColumnList();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,15 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
   breadcrumbsRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeBreadcrumbs', 'toggleBreadcrumbsRemoval'));
   sprintHeaderRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeSprintHeader', 'toggleSprintHeaderRemoval'));
   filtersRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeFilters', 'toggleFiltersRemoval'));
-  swimlaneHeadersRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeSwimlaneHeaders', 'toggleSwimlaneHeadersRemoval'));
-  columnHeaderPaddingRange.addEventListener('input', event => toggleSwitch(+event.target.value, 'columnHeaderPadding',  'setColumnHeaderPadding'));
-  removeColumnButton.addEventListener('click', () => {
-    rootState.removeColumns = {
-      ...rootState.removeColumns,
-      [humanizeString(removeColumnInput.value)]: true,
-    };
-    toggleSwitch(rootState.removeColumns, 'removeColumns', 'toggleColumnsRemoval');
-    removeColumnInput.value = '';
-    fillRemoveColumnList();
+  swimlaneHeadersRemovalSwitch.addEventListener('change', event => {
+    toggleSwitch(event.target.checked, 'removeSwimlaneHeaders', 'toggleSwimlaneHeadersRemoval');
+    setPaddingRangeState(event.target.checked);
   });
+  unassignedRowRemovalSwitch.addEventListener('change', event => toggleSwitch(event.target.checked, 'removeUnassignedRow', 'toggleUnassignedRowRemoval'));
+  columnHeaderPaddingRange.addEventListener('input', event => toggleSwitch(+event.target.value, 'columnHeaderPadding',  'setColumnHeaderPadding'));
+  resetButton.addEventListener('click', resetSettings);
+  removeColumnButton.addEventListener('click', removeColumn);
 });
