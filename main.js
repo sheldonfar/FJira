@@ -66,7 +66,7 @@ function toggleFiltersRemoval(value) {
       filtersParent.style.margin = '0';
     }
   } else {
-    filters.style.display = 'flex';
+    filters.style.display = 'block';
     if (filtersParent) {
       filtersParent.style.margin = null;
     }
@@ -75,8 +75,8 @@ function toggleFiltersRemoval(value) {
 
 function toggleSwimlaneHeadersRemoval(value) {
   const columnHeaderContainer = document.querySelector('div[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
-  const swimlaneContents = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-content"]');
-  const swimlaneWrappers = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-wrapper"]');
+  const swimlaneContents = document.querySelectorAll('div[data-testid="platform-board-kit.ui.swimlane.swimlane-content"]');
+  const swimlaneWrappers = document.querySelectorAll('div[data-testid="platform-board-kit.ui.swimlane.swimlane-wrapper"]');
 
   const swimlaneHeader = columnHeaderContainer?.parentElement?.parentElement?.parentElement?.parentElement;
 
@@ -88,19 +88,26 @@ function toggleSwimlaneHeadersRemoval(value) {
   [...swimlaneContents].forEach(swimlaneContent => {
     swimlaneContent.parentElement.style.top = value ? '0' : null;
   });
-  
+ 
   [...swimlaneWrappers].forEach(swimlaneWrapper => {
     swimlaneWrapper.firstChild.style.top = value ? '40px' : null;
   });
 
   if (value) {
     swimlaneHeader.style.display = 'none';
+    if (swimlaneWrappers[0]) {
+      swimlaneWrappers[0].setAttribute('data-fjira-top', swimlaneWrappers[0].style.top);
+      swimlaneWrappers[0].style.top = '0px';
+    }
     
     if (placeholder) {
       placeholder.style.display = 'none';
     }
   } else {
     swimlaneHeader.style.display = 'grid';
+    if (swimlaneWrappers[0]) {
+      swimlaneWrappers[0].style.top = swimlaneWrappers[0].getAttribute('data-fjira-top');
+    }
 
     if (placeholder) {
       placeholder.style.display = 'block';
@@ -109,7 +116,7 @@ function toggleSwimlaneHeadersRemoval(value) {
 }
 
 function toggleUnassignedRowRemoval(value) {
-  const swimlaneWrapper = [...document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-wrapper"]')]
+  const swimlaneWrapper = [...document.querySelectorAll('div[data-testid="platform-board-kit.ui.swimlane.swimlane-wrapper"]')]
     .find(el => el.textContent.includes('Unassigned'));
 
   if (!swimlaneWrapper) return;
@@ -123,22 +130,23 @@ function toggleUnassignedRowRemoval(value) {
 
 function setColumnHeaderPadding(value) {
   const columnHeaderContainers = document.querySelectorAll('div[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
-  const swimlaneContents = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-content"]');
-  const swimlaneWrappers = document.querySelectorAll('div[data-test-id="platform-board-kit.ui.swimlane.swimlane-wrapper"]');
+  const swimlaneContents = document.querySelectorAll('div[data-testid="platform-board-kit.ui.swimlane.swimlane-content"]');
+  const swimlaneWrappers = document.querySelectorAll('div[data-testid="platform-board-kit.ui.swimlane.swimlane-wrapper"]');
 
   [...columnHeaderContainers].forEach(columnHeaderContainer => {
-    columnHeaderContainer.parentElement.style.height = `${value}px`;
+    columnHeaderContainer.style.height = `${value}px`;
   });
 
   [...swimlaneContents].forEach(swimlaneContent => {
     swimlaneContent.parentElement.style.top = `${value}px`;
   });
-  
+
   [...swimlaneWrappers].forEach(swimlaneWrapper => {
     swimlaneWrapper.firstChild.style.top = `${value}px`;
   });
 
   if (swimlaneWrappers[0]) {
+    swimlaneWrappers[0].style.top = `${value}px`;
     swimlaneWrappers[0].parentElement.firstChild.style.height = `${value}px`;
     swimlaneWrappers[0].parentElement.firstChild.style.marginTop = `-${value}px`;
   }
@@ -157,7 +165,7 @@ function toggleColumnsRemoval(data) {
     if (!column) return;
   
     const index = columnHeaderContainersList.indexOf(columnHeaderContainer);
-    const mainColumns = document.querySelectorAll(`div[data-test-id="platform-board-kit.ui.column.draggable-column.styled-wrapper"]:nth-of-type(${index + 1})`);
+    const mainColumns = document.querySelectorAll(`div[data-testid="platform-board-kit.ui.column.draggable-column.styled-wrapper"]:nth-of-type(${index + 1})`);
 
     [...mainColumns].forEach(mainColumn => {
       if (data[key]) {
@@ -175,27 +183,31 @@ function toggleColumnsRemoval(data) {
   });
 }
 
+function sanitizeColumnName(name) {
+  return name.replace(/[0-9/]/g, '').trim().toLowerCase();
+}
+
 function exportTickets(formatFor) {
-  const columnName = clickedEl.innerText.replace(/[0-9]/g, '').trim();
+  const columnName = sanitizeColumnName(clickedEl.innerText);
 
   const columnHeaderContainers = document.querySelectorAll('[data-testid="platform-board-kit.common.ui.column-header.header.column-header-container"]');
   const columnHeaderContainersList = [...columnHeaderContainers];
-  const columnHeaderContainer = columnHeaderContainersList.find(el => el.textContent.toLowerCase().includes(columnName.toLowerCase()));
+  const columnHeaderContainer = columnHeaderContainersList.find(el => sanitizeColumnName(el.textContent).includes(columnName));
   const column = columnHeaderContainer?.parentElement?.parentElement?.parentElement;
 
   if (!column) return;
 
   const index = columnHeaderContainersList.indexOf(columnHeaderContainer);
-  const mainColumns = document.querySelectorAll(`div[data-test-id="platform-board-kit.ui.column.draggable-column.styled-wrapper"]:nth-of-type(${index + 1})`);
+  const mainColumns = document.querySelectorAll(`div[data-testid="platform-board-kit.ui.column.draggable-column.styled-wrapper"]:nth-of-type(${index + 1})`);
 
   let list = `--${columnName}--\n\n`;
 
   if (formatFor === 'slack') {
-    list = `*${columnName}*\n\n`;
+    list = `*${columnName.toUpperCase()}*\n\n`;
   }
 
   [...mainColumns].forEach(mainColumn => {
-    const issues = mainColumn.querySelectorAll('[data-test-id="platform-board-kit.ui.card.card"]');
+    const issues = mainColumn.querySelectorAll('[data-testid="platform-board-kit.ui.card.card"]');
     const issuesList = [...issues];
     
     issuesList.forEach((issue, index) => {
